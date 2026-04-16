@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLMINTD Login</title>
+  <link rel="stylesheet" href="/ui/static/styles.css?v=split-flow-20260416">
+</head>
+<body class="landing-body">
+  <main class="landing-auth auth-page">
+    <div class="auth-panel">
+      <a href="/ui" class="landing-back-button landing-button-link">Back</a>
+      <p class="eyebrow">Create Workspace</p>
+      <h1 id="authTitle">Create Your Account</h1>
+      <p class="subtle" id="authMessage">Create an account first. After signup, choose testing or deployment.</p>
+
+      <div class="auth-tabs">
+        <button id="showSignupButton" type="button" class="ghost active-tab">Create Account</button>
+        <button id="showLoginButton" type="button" class="ghost">Login</button>
+      </div>
+
+      <form id="signupForm" class="auth-form">
+        <label>Full name</label>
+        <input type="text" name="full_name" placeholder="Dr. Research User" required>
+        <label>Email</label>
+        <input type="email" name="email" placeholder="faculty@example.edu" required>
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Create a password" minlength="8" required>
+        <button type="submit">Create Account</button>
+      </form>
+
+      <form id="loginForm" class="auth-form" hidden>
+        <label>Email</label>
+        <input type="email" name="email" placeholder="faculty@example.edu" required>
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter your password" required>
+        <button type="submit">Login</button>
+      </form>
+
+      <div class="auth-divider"><span>or</span></div>
+      <div id="googleButtonWrap" class="google-wrap"></div>
+      <p id="googleHint" class="subtle">Checking Google sign-in availability...</p>
+    </div>
+  </main>
+
+  <script src="/ui/static/auth.js?v=split-flow-20260416"></script>
+</body>
+</html>

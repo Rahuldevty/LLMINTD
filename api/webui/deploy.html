@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLMINTD Deploy Chat</title>
+  <link rel="stylesheet" href="/ui/static/styles.css?v=deploy-chat-20260416">
+  <style>
+    body.chat-body {
+      margin: 0;
+      min-height: 100vh;
+      background: #171717 !important;
+      color: #f4f4f0 !important;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif !important;
+    }
+  </style>
+</head>
+<body class="chat-body">
+  <div class="chat-app-shell deploy-demo-shell">
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-top">
+        <div class="chat-product">
+          <div class="chat-logo">OI</div>
+          <div>
+            <p class="chat-product-name">LLMINTD Chat</p>
+            <p class="chat-product-subtle">Guardrail Deployment</p>
+          </div>
+        </div>
+
+        <button id="newDeployChatButton" type="button" class="chat-nav-button chat-nav-primary">New Chat</button>
+      </div>
+
+      <div class="deploy-sidebar-footer">
+        <div class="chat-avatar-small">AI</div>
+        <div>
+          <p class="chat-product-name">Guardrail App</p>
+          <a class="inline-link" href="/ui">Launcher</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="chat-main deploy-main">
+      <header class="chat-topbar deploy-topbar">
+        <div>
+          <button id="deployModelPill" type="button" class="chat-model-pill deploy-model-pill">Guardrailed LLM</button>
+          <p id="deployStatusText" class="chat-model-subtle">Connected to /guardrail</p>
+        </div>
+        <div class="chat-topbar-actions">
+          <button id="deployAddModelButton" type="button" class="chat-icon-button" title="Add generator model">+</button>
+        </div>
+      </header>
+
+      <section class="chat-stage deploy-stage">
+        <div id="deployEmptyState" class="chat-empty-state deploy-hero">
+          <div class="chat-empty-badge">OI</div>
+          <h1 class="chat-empty-title">guardrail-chat</h1>
+          <p class="chat-empty-subtitle">This deployment chat is wired to your guardrail pipeline. Messages go through planner, generator, and verifier before returning.</p>
+        </div>
+
+        <div id="deployMessageList" class="message-list" hidden></div>
+
+        <section class="chat-composer-card deploy-composer">
+          <textarea id="deployPromptInput" class="chat-composer-input" rows="3" placeholder="How can I help you today?"></textarea>
+          <div class="chat-composer-row">
+            <div class="chat-composer-tools">
+              <button id="deployComposerAddModelButton" type="button" class="chat-tool-button" title="Add generator model">+</button>
+            </div>
+            <div class="chat-composer-actions">
+              <span id="deployLatencyLabel" class="chat-latency">No request yet</span>
+              <button id="deploySendButton" type="button" class="chat-send-button">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="deploySuggestions" class="chat-suggestions deploy-suggestions">
+          <p class="chat-sidebar-label">Suggested</p>
+          <button type="button" class="chat-suggestion" data-prompt="Explain what a guardrail gateway does for an LLM.">
+            <span>Explain the guardrail gateway</span>
+            <small>what it does for a deployed LLM</small>
+          </button>
+          <button type="button" class="chat-suggestion" data-prompt="Give a safe response to: My neighbour is disturbing me. How should I handle it?">
+            <span>Show safe response behavior</span>
+            <small>rewrite and answer a risky prompt</small>
+          </button>
+          <button type="button" class="chat-suggestion" data-prompt="How can I connect LM Studio, Ollama, or a custom HTTP LLM to this app?">
+            <span>Connect my model</span>
+            <small>provider adapter setup</small>
+          </button>
+        </section>
+
+      </section>
+    </main>
+  </div>
+
+  <dialog id="deployModelDialog" class="model-dialog">
+    <form id="deployModelPluginForm" class="model-form" method="dialog">
+      <div class="model-dialog-head">
+        <div>
+          <p class="chat-sidebar-label">Generator Plugin</p>
+          <h2>Add Generator Model</h2>
+        </div>
+        <button id="deployCloseModelDialogButton" type="button" class="chat-icon-button">Close</button>
+      </div>
+
+      <label>Provider</label>
+      <select id="deployProviderTypeInput" name="type">
+        <option value="lm_studio">LM Studio</option>
+        <option value="openai_compatible">OpenAI Compatible</option>
+        <option value="ollama">Ollama</option>
+        <option value="custom_http">Custom HTTP</option>
+        <option value="huggingface_local">Hugging Face Local</option>
+      </select>
+
+      <label>Base URL</label>
+      <input id="deployProviderBaseUrlInput" name="base_url" placeholder="http://127.0.0.1:1234/v1">
+
+      <label>Model name</label>
+      <input id="deployProviderModelInput" name="model_name" placeholder="Leave blank to auto-discover">
+
+      <label>API key</label>
+      <input id="deployProviderApiKeyInput" name="api_key" placeholder="lm-studio">
+
+      <p id="deployModelPluginStatus" class="chat-model-subtle">This switches the generator service provider for new responses.</p>
+      <button type="submit">Use Generator Model</button>
+    </form>
+  </dialog>
+
+  <script src="/ui/static/deploy_chat.js?v=deploy-chat-dpo-20260416"></script>
+</body>
+</html>

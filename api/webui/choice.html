@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLMINTD Workspace</title>
+  <link rel="stylesheet" href="/ui/static/styles.css?v=split-flow-20260416">
+</head>
+<body class="landing-body">
+  <main class="choice-root">
+    <div class="choice-header">
+      <div>
+        <p class="eyebrow">Workspace Ready</p>
+        <h1>What do you want to do?</h1>
+        <p class="subtle">Choose your path. Testing opens the black research web UI. Deploy opens the chat interface.</p>
+      </div>
+      <div class="choice-profile">
+        <div class="avatar" id="userAvatar">AI</div>
+        <div>
+          <p id="userName">User</p>
+          <small id="userEmail">user@example.com</small>
+        </div>
+        <button id="logoutButton" type="button" class="ghost">Logout</button>
+      </div>
+    </div>
+
+    <div class="choice-grid">
+      <article class="choice-card">
+        <p class="eyebrow">Researcher Mode</p>
+        <h2>Test The LLM</h2>
+        <p>Run prompts against the guardrail pipeline, inspect traces, and test model security.</p>
+        <button id="openTesterButton" type="button">Open Black Test UI</button>
+      </article>
+
+      <article class="choice-card highlighted">
+        <p class="eyebrow">Deployment Mode</p>
+        <h2>Deploy Guardrail For LLM</h2>
+        <p>Open the Open WebUI-style chat interface for guarded deployment.</p>
+        <button id="openDeployButton" type="button">Open Chat Interface</button>
+      </article>
+    </div>
+  </main>
+
+  <script src="/ui/static/choice.js?v=split-flow-20260416"></script>
+</body>
+</html>

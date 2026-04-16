@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+transformers
+accelerate
+bitsandbytes
+datasets
+sentence-transformers
+faiss-cpu
+scikit-learn
+langgraph
+matplotlib
+peft
+pydantic
+requests
+pyyaml
+torch
+trl

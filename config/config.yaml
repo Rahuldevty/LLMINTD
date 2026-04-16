@@ -1,0 +1,47 @@
+models:
+  planner: "sentence-transformers/all-MiniLM-L6-v2"
+  researcher: "openai/gpt-oss-20b"
+  generator: "openai/gpt-oss-20b"
+  verifier_llm: "openai/gpt-oss-20b"
+  verifier_embed: "sentence-transformers/all-MiniLM-L6-v2"
+
+inference:
+  backend: "openai_compatible"
+  base_url: "http://127.0.0.1:1234/v1"
+  api_key: "lm-studio"
+  model_name: null
+  auto_discover_model: true
+  timeout_seconds: 600
+  kv_cache: true
+  cache_implementation: null
+
+generator_provider:
+  type: "lm_studio"
+  base_url: "http://127.0.0.1:1234/v1"
+  api_key: "lm-studio"
+  model_name: null
+  auto_discover_model: true
+  request_timeout: 600
+
+quantization:
+  enable: true
+  bits: 4
+
+ports:
+  planner: 8001
+  researcher: 8002
+  generator: 8003
+  verifier: 8004
+  api: 8000
+
+logging:
+  level: INFO
+  file: logs/guardrail.log
+
+auth:
+  google_client_id: null
+  session_cookie_name: "llmintd_session"
+  database: logs/app_auth.db
+
+ui:
+  open_webui_url: "http://127.0.0.1:3000"

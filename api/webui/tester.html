@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLMINTD Chat Workspace</title>
+  <link rel="stylesheet" href="/ui/static/styles.css">
+</head>
+<body class="chat-body">
+  <div class="chat-app-shell">
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-top">
+        <div class="chat-product">
+          <div class="chat-logo">OI</div>
+          <div>
+            <p class="chat-product-name">LLMINTD</p>
+            <p class="chat-product-subtle">Guardrail Workspace</p>
+          </div>
+        </div>
+
+        <button id="newChatButton" type="button" class="chat-nav-button chat-nav-primary">New Chat</button>
+      </div>
+
+      <div class="chat-sidebar-footer">
+        <a class="inline-link" href="/ui">Back to launcher</a>
+      </div>
+    </aside>
+
+    <main class="chat-main">
+      <header class="chat-topbar">
+        <div>
+          <button id="modelPill" type="button" class="chat-model-pill">Guardrailed Model</button>
+          <p class="chat-model-subtle" id="statusTitle">Ready to test your LLM</p>
+        </div>
+        <div class="chat-topbar-actions">
+          <button id="addModelButton" type="button" class="chat-icon-button" title="Add generator model">+</button>
+          <button id="toggleTraceButton" type="button" class="chat-icon-button">Trace</button>
+        </div>
+      </header>
+
+      <section class="chat-stage">
+        <div class="chat-empty-state" id="chatEmptyState">
+          <div class="chat-empty-badge">OI</div>
+          <h1 class="chat-empty-title">guardrail-chat</h1>
+          <p class="chat-empty-subtitle">Stress-test a model, inspect the safety pipeline, and keep the conversation flowing like a real chat app.</p>
+        </div>
+
+        <div id="messageList" class="message-list" hidden></div>
+
+        <section class="chat-composer-card">
+          <textarea id="promptInput" class="chat-composer-input" rows="3" placeholder="How can I help you today?"></textarea>
+          <div class="chat-composer-row">
+            <div class="chat-composer-tools">
+              <button id="composerAddModelButton" type="button" class="chat-tool-button" title="Add generator model">+</button>
+            </div>
+            <div class="chat-composer-actions">
+              <span class="chat-latency" id="latencyLabel">No request yet</span>
+              <button id="runButton" type="button" class="chat-send-button">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="suggestionsPanel" class="chat-suggestions">
+          <p class="chat-sidebar-label">Suggested</p>
+          <button type="button" class="chat-suggestion" data-prompt="Show me a guarded explanation of a sticky header implementation for a website.">
+            <span>Show me a code snippet</span>
+            <small>of a website's sticky header</small>
+          </button>
+          <button type="button" class="chat-suggestion" data-prompt="Help me study vocabulary for a college entrance exam with a safe step-by-step plan.">
+            <span>Help me study</span>
+            <small>vocabulary for a college entrance exam</small>
+          </button>
+          <button type="button" class="chat-suggestion" data-prompt="Give me safe, practical advice to overcome procrastination.">
+            <span>Overcome procrastination</span>
+            <small>give me tips</small>
+          </button>
+        </section>
+      </section>
+    </main>
+
+    <aside id="tracePanel" class="trace-drawer">
+      <div class="trace-drawer-head">
+        <div>
+          <p class="chat-sidebar-label">Guardrail Trace</p>
+          <h2 id="statusPill">Idle</h2>
+        </div>
+        <button id="closeTraceButton" type="button" class="chat-icon-button">Close</button>
+      </div>
+
+      <section class="trace-drawer-card">
+        <div class="section-head">
+          <h3>Planner</h3>
+        </div>
+        <pre id="plannerOutput" class="trace-text">Waiting for input...</pre>
+      </section>
+
+      <section class="trace-drawer-card">
+        <div class="section-head">
+          <h3>Researcher</h3>
+        </div>
+        <pre id="researcherOutput" class="trace-text">Waiting for input...</pre>
+      </section>
+
+      <section class="trace-drawer-card">
+        <div class="section-head">
+          <h3>Generator</h3>
+        </div>
+        <pre id="generatorOutput" class="trace-text">Waiting for input...</pre>
+      </section>
+
+      <section class="trace-drawer-card">
+        <div class="section-head">
+          <h3>Verifier</h3>
+        </div>
+        <pre id="verifierOutput" class="trace-text">Waiting for input...</pre>
+      </section>
+
+      <section class="trace-drawer-card">
+        <div class="section-head">
+          <h3>Raw Trace JSON</h3>
+          <button id="copyTraceButton" type="button" class="ghost">Copy</button>
+        </div>
+        <pre id="rawTrace" class="trace-text">{}</pre>
+      </section>
+    </aside>
+  </div>
+
+  <dialog id="modelDialog" class="model-dialog">
+    <form id="modelPluginForm" class="model-form" method="dialog">
+      <div class="model-dialog-head">
+        <div>
+          <p class="chat-sidebar-label">Generator Plugin</p>
+          <h2>Add Generator Model</h2>
+        </div>
+        <button id="closeModelDialogButton" type="button" class="chat-icon-button">Close</button>
+      </div>
+
+      <label>Provider</label>
+      <select id="providerTypeInput" name="type">
+        <option value="lm_studio">LM Studio</option>
+        <option value="openai_compatible">OpenAI Compatible</option>
+        <option value="ollama">Ollama</option>
+        <option value="custom_http">Custom HTTP</option>
+        <option value="huggingface_local">Hugging Face Local</option>
+      </select>
+
+      <label>Base URL</label>
+      <input id="providerBaseUrlInput" name="base_url" placeholder="http://127.0.0.1:1234/v1">
+
+      <label>Model name</label>
+      <input id="providerModelInput" name="model_name" placeholder="Leave blank to auto-discover">
+
+      <label>API key</label>
+      <input id="providerApiKeyInput" name="api_key" placeholder="lm-studio">
+
+      <p id="modelPluginStatus" class="chat-model-subtle">This switches the generator service provider for new responses.</p>
+      <button type="submit">Use Generator Model</button>
+    </form>
+  </dialog>
+
+  <script src="/ui/static/app.js"></script>
+</body>
+</html>

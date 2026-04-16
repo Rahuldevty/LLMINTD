@@ -1,0 +1,4 @@
+{
+  "note": "Rule-based keyword lists are deprecated. ML-based classification is used in planner/verifier.",
+  "status": "disabled"
+}

@@ -1,0 +1,23 @@
+digraph LLMINTD_LangGraph {
+	rankdir=LR
+	node [shape=box]
+	"User Input"
+	Planner
+	Researcher
+	Generator
+	Verifier
+	Retry
+	End_Block
+	End_Pass
+	End_Fail
+	"User Input" -> Planner
+	Planner -> Generator [label=ALLOW]
+	Planner -> Researcher [label=REWRITE]
+	Planner -> End_Block [label=BLOCK]
+	Researcher -> Generator [label=""]
+	Generator -> Verifier [label=""]
+	Verifier -> End_Pass [label=PASS]
+	Verifier -> Retry [label=RETRY]
+	Verifier -> End_Fail [label=REJECT]
+	Retry -> Generator [label=""]
+}
