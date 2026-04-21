@@ -10,6 +10,7 @@ from uuid import uuid4
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DPO_GENERATIONS_PATH = ROOT_DIR / "logs" / "dpo_generations.jsonl"
 DPO_PREFERENCES_PATH = ROOT_DIR / "logs" / "dpo_preferences.jsonl"
+PLANNER_CATEGORY_FEEDBACK_PATH = ROOT_DIR / "logs" / "planner_category_feedback.jsonl"
 
 
 def utc_timestamp() -> str:
@@ -55,3 +56,13 @@ def save_preference(record: Dict[str, Any]) -> Dict[str, Any]:
     }
     append_jsonl(DPO_PREFERENCES_PATH, preference)
     return preference
+
+
+def save_planner_category_feedback(record: Dict[str, Any]) -> Dict[str, Any]:
+    feedback = {
+        "id": record.get("id") or str(uuid4()),
+        "created_at": utc_timestamp(),
+        **record,
+    }
+    append_jsonl(PLANNER_CATEGORY_FEEDBACK_PATH, feedback)
+    return feedback

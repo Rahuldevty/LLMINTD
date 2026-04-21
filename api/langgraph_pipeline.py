@@ -50,9 +50,16 @@ def call_planner(user_input: str):
     }
 
 
-def call_researcher(user_input: str):
+def call_researcher(user_input: str, planner_decision: str = "", categories: List[str] | None = None):
     researcher_url = f"http://localhost:{config['ports']['researcher']}/researcher/rewrite"
-    return call_agent(researcher_url, {"prompt": user_input}) or {
+    return call_agent(
+        researcher_url,
+        {
+            "prompt": user_input,
+            "planner_decision": planner_decision,
+            "categories": categories or [],
+        },
+    ) or {
         'rewritten_prompt': ''
     }
 
@@ -91,7 +98,11 @@ def planner_node(state: AgentState):
 
 
 def researcher_node(state: AgentState):
-    result = call_researcher(state['user_input'])
+    result = call_researcher(
+        state['user_input'],
+        planner_decision=state.get('planner_decision', ''),
+        categories=state.get('risk_categories', []),
+    )
     state['rewritten_prompt'] = result.get('rewritten_prompt', '')
     logger.info(f"researcher_node: rewritten_prompt={state['rewritten_prompt']}")
     return {'rewritten_prompt': state['rewritten_prompt']}

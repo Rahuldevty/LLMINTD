@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Optional
+import sys
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel
@@ -10,8 +11,6 @@ import os
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from requests import RequestException
-from shared.dpo_store import load_generation, save_generation, save_preference
-from shared.safety_text import build_safe_response
 
 try:
     from auth_store import AuthStore
@@ -19,6 +18,16 @@ except ImportError:  # pragma: no cover
     from api.auth_store import AuthStore
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+from shared.dpo_store import (
+    load_generation,
+    save_generation,
+    save_planner_category_feedback,
+    save_preference,
+)
+from shared.safety_text import build_safe_response
 
 # Load config
 config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'config.yaml')
@@ -85,6 +94,14 @@ class DPOPreferenceRequest(BaseModel):
     chosen: Optional[str] = None
     rejected: Optional[str] = None
     reason: Optional[str] = None
+
+
+class PlannerCategoryFeedbackRequest(BaseModel):
+    prompt: str
+    planner_decision: str
+    planner_categories: list[str] = []
+    is_correct: bool
+    corrected_categories: list[str] = []
 
 
 def build_session_response(response: Response, user, token: str):
@@ -206,7 +223,14 @@ def run_sequential_pipeline(prompt: str):
 
     final_prompt = prompt
     if decision == "REWRITE":
-        researcher_result = call_agent(researcher_url, {"prompt": prompt})
+        researcher_result = call_agent(
+            researcher_url,
+            {
+                "prompt": prompt,
+                "planner_decision": decision,
+                "categories": planner_result.get("categories", []),
+            },
+        )
         trace["researcher"] = researcher_result
         if researcher_result is None:
             trace["final_response"] = "I'm sorry, but I cannot process this request because the researcher is unavailable."
@@ -327,6 +351,34 @@ async def record_dpo_preference(request: DPOPreferenceRequest, http_request: Req
         }
     )
     return {"ok": True, "preference_id": record["id"]}
+
+
+@app.post("/planner/category_feedback")
+async def record_planner_category_feedback(
+    request: PlannerCategoryFeedbackRequest,
+    http_request: Request,
+):
+    normalized_corrected = [
+        category.strip()
+        for category in request.corrected_categories
+        if category and category.strip()
+    ]
+    if not request.is_correct and not normalized_corrected:
+        raise HTTPException(status_code=400, detail="Provide at least one corrected category")
+
+    user = current_user_from_request(http_request)
+    record = save_planner_category_feedback(
+        {
+            "prompt": request.prompt,
+            "planner_decision": request.planner_decision,
+            "planner_categories": request.planner_categories,
+            "is_correct": request.is_correct,
+            "corrected_categories": normalized_corrected,
+            "user_id": user.id if user else None,
+            "source": "test_llm_interface",
+        }
+    )
+    return {"ok": True, "feedback_id": record["id"]}
 
 
 # LangGraph orchestration endpoint
