@@ -5,6 +5,24 @@ models:
   verifier_llm: "openai/gpt-oss-20b"
   verifier_embed: "sentence-transformers/all-MiniLM-L6-v2"
 
+researcher_rewrite_model:
+  type: "lm_studio"
+  base_url: "http://127.0.0.1:1234/v1"
+  api_key: "lm-studio"
+  model_name: null
+  auto_discover_model: true
+  temperature: 0.0
+  max_tokens: 96
+
+verifier_judge_model:
+  type: "lm_studio"
+  base_url: "http://127.0.0.1:1234/v1"
+  api_key: "lm-studio"
+  model_name: null
+  auto_discover_model: true
+  temperature: 0.0
+  max_tokens: 220
+
 inference:
   backend: "openai_compatible"
   base_url: "http://127.0.0.1:1234/v1"

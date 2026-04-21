@@ -15,3 +15,5 @@ requests
 pyyaml
 torch
 trl
+huggingface_hub
+llama-cpp-python

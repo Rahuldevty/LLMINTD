@@ -935,6 +935,35 @@ button:disabled {
   max-height: 22vh;
 }
 
+.planner-feedback-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.planner-feedback-copy,
+.planner-feedback-status {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.planner-feedback-actions,
+.planner-feedback-correction {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.planner-feedback-correction input {
+  flex: 1 1 100%;
+  min-width: 0;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f4f0;
+}
+
 .model-dialog {
   width: min(94vw, 560px);
   border: 1px solid rgba(255, 255, 255, 0.12);

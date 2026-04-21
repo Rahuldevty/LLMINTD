@@ -13,6 +13,13 @@ const plannerOutput = document.getElementById("plannerOutput");
 const researcherOutput = document.getElementById("researcherOutput");
 const generatorOutput = document.getElementById("generatorOutput");
 const verifierOutput = document.getElementById("verifierOutput");
+const plannerFeedbackLabel = document.getElementById("plannerFeedbackLabel");
+const plannerFeedbackCorrect = document.getElementById("plannerFeedbackCorrect");
+const plannerFeedbackIncorrect = document.getElementById("plannerFeedbackIncorrect");
+const plannerFeedbackCorrectionRow = document.getElementById("plannerFeedbackCorrectionRow");
+const plannerFeedbackInput = document.getElementById("plannerFeedbackInput");
+const plannerFeedbackSave = document.getElementById("plannerFeedbackSave");
+const plannerFeedbackStatus = document.getElementById("plannerFeedbackStatus");
 
 const messageList = document.getElementById("messageList");
 const chatEmptyState = document.getElementById("chatEmptyState");
@@ -29,6 +36,7 @@ const modelPluginStatus = document.getElementById("modelPluginStatus");
 const modelPill = document.getElementById("modelPill");
 
 const messageHistory = [];
+let activePlannerFeedbackMessage = null;
 
 function formatJson(value) {
   if (value === null || value === undefined) {
@@ -156,6 +164,10 @@ function renderMessages() {
       item.appendChild(feedback);
     }
 
+    if (message.role === "assistant" && message.trace?.planner) {
+      item.appendChild(buildPlannerCategoryFeedback(message));
+    }
+
     messageList.appendChild(item);
   }
 
@@ -249,6 +261,126 @@ function findMessageByGenerationId(generationId) {
   return messageHistory.find((message) => message.generationId === generationId);
 }
 
+function parseCategoryInput(value) {
+  return (value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+async function submitPlannerCategoryFeedback(message, isCorrect, correctedCategories = []) {
+  message.plannerFeedbackStatus = "Saving planner feedback...";
+  syncPlannerFeedbackPanel(message);
+  renderMessages();
+
+  try {
+    const response = await fetch("/planner/category_feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: message.prompt || "",
+        planner_decision: message.trace?.planner?.decision || "",
+        planner_categories: message.trace?.planner?.categories || [],
+        is_correct: isCorrect,
+        corrected_categories: correctedCategories,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.detail || "Unable to save planner feedback");
+    }
+    message.plannerFeedbackDone = true;
+    message.plannerFeedbackStatus = isCorrect
+      ? "Planner category confirmed"
+      : `Corrected category saved: ${correctedCategories.join(", ")}`;
+    message.showPlannerCorrection = false;
+  } catch (error) {
+    message.plannerFeedbackStatus = error.message;
+  }
+  syncPlannerFeedbackPanel(message);
+  renderMessages();
+}
+
+function syncPlannerFeedbackPanel(message) {
+  activePlannerFeedbackMessage = message || null;
+  if (!message || !message.trace?.planner) {
+    plannerFeedbackLabel.textContent = "Run a prompt to review the planner category.";
+    plannerFeedbackCorrect.disabled = true;
+    plannerFeedbackIncorrect.disabled = true;
+    plannerFeedbackCorrectionRow.hidden = true;
+    plannerFeedbackInput.value = "";
+    plannerFeedbackStatus.textContent = "No feedback submitted yet.";
+    return;
+  }
+
+  const planner = message.trace.planner || {};
+  const categories = planner.categories?.length ? planner.categories.join(", ") : "none";
+  plannerFeedbackLabel.textContent = `Planner category correct? Current: ${categories}`;
+  plannerFeedbackCorrect.disabled = Boolean(message.plannerFeedbackDone);
+  plannerFeedbackIncorrect.disabled = Boolean(message.plannerFeedbackDone);
+  plannerFeedbackCorrectionRow.hidden = !message.showPlannerCorrection || Boolean(message.plannerFeedbackDone);
+  plannerFeedbackInput.value = message.correctedCategoriesDraft || "";
+  plannerFeedbackStatus.textContent = message.plannerFeedbackStatus || "No feedback submitted yet.";
+}
+
+function buildPlannerCategoryFeedback(message) {
+  const planner = message.trace?.planner || {};
+  const categories = planner.categories?.length ? planner.categories.join(", ") : "none";
+  const panel = document.createElement("div");
+  panel.className = "message-feedback";
+
+  const label = document.createElement("span");
+  label.textContent = `Planner category correct? Current: ${categories}`;
+  panel.appendChild(label);
+
+  const correctButton = document.createElement("button");
+  correctButton.type = "button";
+  correctButton.textContent = "Correct";
+  correctButton.disabled = Boolean(message.plannerFeedbackDone);
+  correctButton.addEventListener("click", () => submitPlannerCategoryFeedback(message, true, []));
+  panel.appendChild(correctButton);
+
+  const incorrectButton = document.createElement("button");
+  incorrectButton.type = "button";
+  incorrectButton.textContent = "Incorrect";
+  incorrectButton.disabled = Boolean(message.plannerFeedbackDone);
+  incorrectButton.addEventListener("click", () => {
+    message.showPlannerCorrection = true;
+    message.plannerFeedbackStatus = "";
+    renderMessages();
+  });
+  panel.appendChild(incorrectButton);
+
+  if (message.showPlannerCorrection && !message.plannerFeedbackDone) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Enter corrected category, comma-separated";
+    input.value = message.correctedCategoriesDraft || "";
+    input.className = "planner-feedback-input";
+    input.addEventListener("input", (event) => {
+      message.correctedCategoriesDraft = event.target.value;
+    });
+    panel.appendChild(input);
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "button";
+    saveButton.textContent = "Save Category";
+    saveButton.addEventListener("click", () => {
+      const correctedCategories = parseCategoryInput(message.correctedCategoriesDraft);
+      submitPlannerCategoryFeedback(message, false, correctedCategories);
+    });
+    panel.appendChild(saveButton);
+  }
+
+  if (message.plannerFeedbackStatus) {
+    const status = document.createElement("span");
+    status.textContent = message.plannerFeedbackStatus;
+    panel.appendChild(status);
+  }
+
+  return panel;
+}
+
 async function sendDpoPreference(generationId, preference) {
   const message = findMessageByGenerationId(generationId);
   if (message) {
@@ -287,6 +419,11 @@ function upsertAssistantMessage(content, footnote = "", dpo = null, trace = null
     previous.dpoPrompt = dpo?.prompt || "";
     previous.feedbackStatus = "";
     previous.trace = trace;
+    previous.prompt = trace?.prompt || previous.prompt || "";
+    previous.plannerFeedbackDone = false;
+    previous.plannerFeedbackStatus = "";
+    previous.correctedCategoriesDraft = "";
+    previous.showPlannerCorrection = false;
   } else {
     messageHistory.push({
       role: "assistant",
@@ -297,9 +434,15 @@ function upsertAssistantMessage(content, footnote = "", dpo = null, trace = null
       dpoPrompt: dpo?.prompt || "",
       feedbackStatus: "",
       trace,
+      prompt: trace?.prompt || "",
+      plannerFeedbackDone: false,
+      plannerFeedbackStatus: "",
+      correctedCategoriesDraft: "",
+      showPlannerCorrection: false,
       pending: false,
     });
   }
+  syncPlannerFeedbackPanel(messageHistory[messageHistory.length - 1]);
   renderMessages();
 }
 
@@ -320,6 +463,7 @@ function resetTracePanels() {
   generatorOutput.textContent = "Waiting for input...";
   verifierOutput.textContent = "Waiting for input...";
   rawTrace.textContent = "{}";
+  syncPlannerFeedbackPanel(null);
 }
 
 async function runPipeline(prefilledPrompt) {
@@ -418,6 +562,33 @@ toggleTraceButton.addEventListener("click", () => {
 });
 closeTraceButton.addEventListener("click", () => setTraceOpen(false));
 copyTraceButton.addEventListener("click", () => copyText(rawTrace.textContent));
+plannerFeedbackCorrect.addEventListener("click", () => {
+  if (activePlannerFeedbackMessage) {
+    submitPlannerCategoryFeedback(activePlannerFeedbackMessage, true, []);
+  }
+});
+plannerFeedbackIncorrect.addEventListener("click", () => {
+  if (!activePlannerFeedbackMessage) {
+    return;
+  }
+  activePlannerFeedbackMessage.showPlannerCorrection = true;
+  activePlannerFeedbackMessage.plannerFeedbackStatus = "";
+  syncPlannerFeedbackPanel(activePlannerFeedbackMessage);
+  renderMessages();
+});
+plannerFeedbackInput.addEventListener("input", (event) => {
+  if (!activePlannerFeedbackMessage) {
+    return;
+  }
+  activePlannerFeedbackMessage.correctedCategoriesDraft = event.target.value;
+});
+plannerFeedbackSave.addEventListener("click", () => {
+  if (!activePlannerFeedbackMessage) {
+    return;
+  }
+  const correctedCategories = parseCategoryInput(activePlannerFeedbackMessage.correctedCategoriesDraft);
+  submitPlannerCategoryFeedback(activePlannerFeedbackMessage, false, correctedCategories);
+});
 
 promptInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && !event.shiftKey) {

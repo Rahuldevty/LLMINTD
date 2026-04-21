@@ -96,6 +96,28 @@
 
       <section class="trace-drawer-card">
         <div class="section-head">
+          <h3>Planner Feedback</h3>
+        </div>
+        <div id="plannerFeedbackPanel" class="planner-feedback-panel">
+          <p id="plannerFeedbackLabel" class="planner-feedback-copy">Run a prompt to review the planner category.</p>
+          <div class="planner-feedback-actions">
+            <button id="plannerFeedbackCorrect" type="button" class="ghost" disabled>Correct</button>
+            <button id="plannerFeedbackIncorrect" type="button" class="ghost" disabled>Incorrect</button>
+          </div>
+          <div id="plannerFeedbackCorrectionRow" class="planner-feedback-correction" hidden>
+            <input
+              id="plannerFeedbackInput"
+              type="text"
+              placeholder="Enter corrected category, comma-separated"
+            >
+            <button id="plannerFeedbackSave" type="button">Save Category</button>
+          </div>
+          <p id="plannerFeedbackStatus" class="planner-feedback-status">No feedback submitted yet.</p>
+        </div>
+      </section>
+
+      <section class="trace-drawer-card">
+        <div class="section-head">
           <h3>Researcher</h3>
         </div>
         <pre id="researcherOutput" class="trace-text">Waiting for input...</pre>
